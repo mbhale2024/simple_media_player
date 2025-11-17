@@ -5,14 +5,10 @@ import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_media_metadata/flutter_media_metadata.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:path/path.dart' as p;
-import 'package:video_player/video_player.dart';
 
 /// ------------------------------------------------------
 /// PLAYER STATE
@@ -200,7 +196,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Player"),
+        title: Text(title),
         actions: [
           IconButton(onPressed: () => context.pop(), icon: Icon(Icons.close)),
         ],
