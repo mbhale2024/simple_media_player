@@ -4,18 +4,15 @@ import '../ui/player/player_screen.dart';
 
 final router = GoRouter(
   routes: [
+    GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
     GoRoute(
-      path: '/',
-      builder: (context, state) => const HomeScreen(),
-    ),
-GoRoute(
-  path: '/player',
-  builder: (context, state) {
-    final raw = state.uri.queryParameters['path'] ?? '';
-    final filePath = Uri.decodeComponent(raw);
+      path: '/player',
+      builder: (context, state) {
+        final raw = state.uri.queryParameters['path'] ?? '';
+        final filePath = Uri.decodeComponent(raw);
 
-    return PlayerScreen(filePath: filePath);
-  },
-),
+        return PlayerScreen(filePath: filePath);
+      },
+    ),
   ],
 );
