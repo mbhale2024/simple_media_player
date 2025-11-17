@@ -1,6 +1,7 @@
 // lib/ui/player/playlist_controller.dart
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:smiple_media_player/ui/player/repeat_mode.dart';
 import 'playlist_state.dart';
 
 final playlistControllerProvider =
@@ -10,14 +11,18 @@ class PlaylistController extends Notifier<PlaylistState> {
   @override
   PlaylistState build() => const PlaylistState();
 
-  void addItem(String path) {
+  bool addItem(String path) {
     final updated = [...state.items, path];
+    final wasEmpty = state.items.isEmpty;
+
     state = state.copyWith(items: updated);
 
-    // if first item added → start from index 0
-    if (updated.length == 1) {
+    // If playlist was empty before adding → set currentIndex = 0
+    if (wasEmpty) {
       state = state.copyWith(currentIndex: 0);
     }
+
+    return wasEmpty; // <-- tells HomeScreen to auto-play
   }
 
   void removeItem(int index) {
@@ -32,11 +37,27 @@ class PlaylistController extends Notifier<PlaylistState> {
     state = state.copyWith(items: updated, currentIndex: newIndex);
   }
 
+  // void next() {
+  //   if (state.items.isEmpty) return;
+
+  //   int newIndex = state.currentIndex + 1;
+  //   if (newIndex >= state.items.length) newIndex = 0;
+
+  //   state = state.copyWith(currentIndex: newIndex);
+  // }
+
   void next() {
     if (state.items.isEmpty) return;
 
     int newIndex = state.currentIndex + 1;
-    if (newIndex >= state.items.length) newIndex = 0;
+
+    if (newIndex >= state.items.length) {
+      if (state.repeatMode == RepeatMode.repeatAll) {
+        newIndex = 0; // wrap around
+      } else {
+        newIndex = state.items.length - 1; // stay at last
+      }
+    }
 
     state = state.copyWith(currentIndex: newIndex);
   }
@@ -77,5 +98,15 @@ class PlaylistController extends Notifier<PlaylistState> {
       current += 1;
 
     state = state.copyWith(items: items, currentIndex: current);
+  }
+
+  void toggleRepeatMode() {
+    final next = {
+      RepeatMode.none: RepeatMode.repeatAll,
+      RepeatMode.repeatAll: RepeatMode.repeatOne,
+      RepeatMode.repeatOne: RepeatMode.none,
+    }[state.repeatMode]!;
+
+    state = state.copyWith(repeatMode: next);
   }
 }

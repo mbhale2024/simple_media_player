@@ -258,87 +258,87 @@
 //     );
 //   }
 
-  // Widget _buildControls(PlayerState state) {
-  //   final controller = state.controller;
-  //   final player = ref.read(playerControllerProvider.notifier);
+// Widget _buildControls(PlayerState state) {
+//   final controller = state.controller;
+//   final player = ref.read(playerControllerProvider.notifier);
 
-  //   // Format duration to MM:SS
-  //   String formatDuration(Duration duration) {
-  //     String twoDigits(int n) => n.toString().padLeft(2, '0');
-  //     final minutes = twoDigits(duration.inMinutes.remainder(60));
-  //     final seconds = twoDigits(duration.inSeconds.remainder(60));
-  //     return '$minutes:$seconds';
-  //   }
+//   // Format duration to MM:SS
+//   String formatDuration(Duration duration) {
+//     String twoDigits(int n) => n.toString().padLeft(2, '0');
+//     final minutes = twoDigits(duration.inMinutes.remainder(60));
+//     final seconds = twoDigits(duration.inSeconds.remainder(60));
+//     return '$minutes:$seconds';
+//   }
 
-  //   return Column(
-  //     children: [
-  //       // Only show scrubber for video
-  //       if (!state.isAudio && controller != null)
-  //         Padding(
-  //           padding: const EdgeInsets.symmetric(horizontal: 12),
-  //           child: VideoProgressIndicator(controller, allowScrubbing: true),
-  //         ),
-  //       const SizedBox(height: 10),
+//   return Column(
+//     children: [
+//       // Only show scrubber for video
+//       if (!state.isAudio && controller != null)
+//         Padding(
+//           padding: const EdgeInsets.symmetric(horizontal: 12),
+//           child: VideoProgressIndicator(controller, allowScrubbing: true),
+//         ),
+//       const SizedBox(height: 10),
 
-  //       Padding(
-  //         padding: const EdgeInsets.symmetric(horizontal: 16.0),
-  //         child: Row(
-  //           mainAxisAlignment: MainAxisAlignment.center,
-  //           children: [
-  //             ValueListenableBuilder(
-  //               valueListenable: controller!,
-  //               builder: (context, value, child) {
-  //                 return Text(formatDuration(controller.value.position));
-  //               },
-  //             ),
-  //             Spacer(),
-  //             IconButton(
-  //               icon: const Icon(Icons.replay_10),
-  //               onPressed: player.backward,
-  //             ),
-  //             IconButton(
-  //               icon: Icon(
-  //                 controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
-  //               ),
-  //               onPressed: player.playPause,
-  //               iconSize: 40,
-  //             ),
-  //             IconButton(
-  //               icon: const Icon(Icons.forward_10),
-  //               onPressed: player.forward,
-  //             ),
-  //             IconButton(
-  //               icon: Icon(state.isRepeating ? Icons.repeat_on : Icons.repeat),
-  //               onPressed: player.toggleRepeat,
-  //             ),
-  //             Spacer(),
-  //             Text(formatDuration(controller.value.duration)),
-  //           ],
-  //         ),
-  //       ),
+//       Padding(
+//         padding: const EdgeInsets.symmetric(horizontal: 16.0),
+//         child: Row(
+//           mainAxisAlignment: MainAxisAlignment.center,
+//           children: [
+//             ValueListenableBuilder(
+//               valueListenable: controller!,
+//               builder: (context, value, child) {
+//                 return Text(formatDuration(controller.value.position));
+//               },
+//             ),
+//             Spacer(),
+//             IconButton(
+//               icon: const Icon(Icons.replay_10),
+//               onPressed: player.backward,
+//             ),
+//             IconButton(
+//               icon: Icon(
+//                 controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
+//               ),
+//               onPressed: player.playPause,
+//               iconSize: 40,
+//             ),
+//             IconButton(
+//               icon: const Icon(Icons.forward_10),
+//               onPressed: player.forward,
+//             ),
+//             IconButton(
+//               icon: Icon(state.isRepeating ? Icons.repeat_on : Icons.repeat),
+//               onPressed: player.toggleRepeat,
+//             ),
+//             Spacer(),
+//             Text(formatDuration(controller.value.duration)),
+//           ],
+//         ),
+//       ),
 
-  //       // Volume
-  //       Row(
-  //         mainAxisAlignment: MainAxisAlignment.center,
-  //         children: [
-  //           const Icon(Icons.volume_down),
-  //           SizedBox(
-  //             width: 200,
-  //             child: Slider(
-  //               value: state.volume,
-  //               min: 0,
-  //               max: 1,
-  //               onChanged: player.setVolume,
-  //             ),
-  //           ),
-  //           const Icon(Icons.volume_up),
-  //         ],
-  //       ),
+//       // Volume
+//       Row(
+//         mainAxisAlignment: MainAxisAlignment.center,
+//         children: [
+//           const Icon(Icons.volume_down),
+//           SizedBox(
+//             width: 200,
+//             child: Slider(
+//               value: state.volume,
+//               min: 0,
+//               max: 1,
+//               onChanged: player.setVolume,
+//             ),
+//           ),
+//           const Icon(Icons.volume_up),
+//         ],
+//       ),
 
-  //       const SizedBox(height: 10),
-  //     ],
-  //   );
-  // }
+//       const SizedBox(height: 10),
+//     ],
+//   );
+// }
 // }
 
 // lib/ui/player/player_screen.dart
@@ -435,7 +435,6 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     );
   }
 
-
   Widget _buildControls(PlayerState state) {
     final controller = state.controller;
     final player = ref.read(playerControllerProvider.notifier);
@@ -462,6 +461,14 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                 },
               ),
               Spacer(),
+              // Previous track
+              IconButton(
+                icon: const Icon(Icons.skip_previous),
+                iconSize: 40,
+                onPressed: () {
+                  ref.read(playerControllerProvider.notifier).playPrevious();
+                },
+              ),
               IconButton(
                 icon: const Icon(Icons.replay_10),
                 onPressed: player.backward,
@@ -477,10 +484,18 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                 icon: const Icon(Icons.forward_10),
                 onPressed: player.forward,
               ),
+              // Next track
               IconButton(
-                icon: Icon(state.isRepeating ? Icons.repeat_on : Icons.repeat),
-                onPressed: player.toggleRepeat,
+                icon: const Icon(Icons.skip_next),
+                iconSize: 40,
+                onPressed: () {
+                  ref.read(playerControllerProvider.notifier).playNext();
+                },
               ),
+              // IconButton(
+              //   icon: Icon(state.isRepeating ? Icons.repeat_on : Icons.repeat),
+              //   onPressed: player.toggleRepeat,
+              // ),
               Spacer(),
               Text(formatDuration(controller.value.duration)),
             ],

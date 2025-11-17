@@ -3,9 +3,21 @@ import 'package:file_picker/file_picker.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:smiple_media_player/ui/player/playlist_controller.dart';
+import 'package:smiple_media_player/ui/player/repeat_mode.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
+
+  IconData _repeatIcon(RepeatMode mode) {
+    switch (mode) {
+      case RepeatMode.repeatAll:
+        return Icons.repeat;
+      case RepeatMode.repeatOne:
+        return Icons.repeat_one;
+      default:
+        return Icons.repeat_outlined;
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -13,7 +25,19 @@ class HomeScreen extends ConsumerWidget {
     final controller = ref.read(playlistControllerProvider.notifier);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Playlist")),
+      appBar: AppBar(
+        title: const Text("Playlist"),
+        actions: [
+          IconButton(
+            icon: Icon(
+              _repeatIcon(ref.watch(playlistControllerProvider).repeatMode),
+            ),
+            onPressed: () {
+              ref.read(playlistControllerProvider.notifier).toggleRepeatMode();
+            },
+          ),
+        ],
+      ),
 
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
@@ -38,8 +62,16 @@ class HomeScreen extends ConsumerWidget {
 
           if (result == null) return;
 
+          bool shouldStartPlayer = false;
           for (var f in result.files) {
-            if (f.path != null) controller.addItem(f.path!);
+            if (f.path != null) {
+              final first = controller.addItem(f.path!);
+              if (first) shouldStartPlayer = true;
+            }
+          }
+          if (shouldStartPlayer) {
+            final firstPath = ref.read(playlistControllerProvider).currentFile!;
+            context.push('/player?path=${Uri.encodeComponent(firstPath)}');
           }
         },
       ),
