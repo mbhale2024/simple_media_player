@@ -1,8 +1,10 @@
+import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:smiple_media_player/ui/player/playlist_controller.dart';
+import 'package:smiple_media_player/ui/player/playlist_state.dart';
 import 'package:smiple_media_player/ui/player/repeat_mode.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -76,42 +78,66 @@ class HomeScreen extends ConsumerWidget {
         },
       ),
 
-      body: playlist.items.isEmpty
-          ? const Center(child: Text("No media added"))
-          : ReorderableListView.builder(
-              itemCount: playlist.items.length,
-              onReorder: (oldIndex, newIndex) {
-                controller.reorder(oldIndex, newIndex);
-              },
-              itemBuilder: (context, index) {
-                final file = playlist.items[index];
-                final isCurrent = index == playlist.currentIndex;
+      body: DropTarget(
+        onDragDone: (details) {
+          final controller = ref.read(playlistControllerProvider.notifier);
 
-                return ListTile(
-                  key: ValueKey(file),
-                  title: Text(
-                    file.split("/").last,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: isCurrent ? Colors.greenAccent : Colors.white,
-                      fontWeight: isCurrent
-                          ? FontWeight.bold
-                          : FontWeight.normal,
-                    ),
-                  ),
-                  leading: Icon(Icons.drag_handle, color: Colors.grey.shade300),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () => controller.removeItem(index),
-                  ),
-                  onTap: () {
-                    controller.jumpTo(index);
-                    context.push("/player?path=${Uri.encodeComponent(file)}");
-                  },
-                );
-              },
+          bool shouldStartPlayer = false;
+
+          for (final file in details.files) {
+            final path = file.path;
+            final firstAdded = controller.addItem(path);
+            if (firstAdded) shouldStartPlayer = true;
+          }
+
+          // Auto-play if playlist was empty
+          if (shouldStartPlayer) {
+            final firstTrack = ref
+                .read(playlistControllerProvider)
+                .currentFile!;
+            context.push('/player?path=${Uri.encodeComponent(firstTrack)}');
+          }
+        },
+
+        child: playlist.items.isEmpty
+            ? const Center(child: Text("Drag files here to add to playlist"))
+            : _playlistListView(ref, playlist),
+      ),
+    );
+  }
+
+  Widget _playlistListView(WidgetRef ref, PlaylistState playlist) {
+    final controller = ref.read(playlistControllerProvider.notifier);
+
+    return ReorderableListView.builder(
+      itemCount: playlist.items.length,
+      onReorder: controller.reorder,
+      itemBuilder: (context, index) {
+        final file = playlist.items[index];
+        final isCurrent = index == playlist.currentIndex;
+
+        return ListTile(
+          key: ValueKey(file),
+          leading: const Icon(Icons.drag_handle),
+          title: Text(
+            file.split('/').last,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: isCurrent ? Colors.greenAccent : Colors.white,
+              fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
             ),
+          ),
+          trailing: IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: () => controller.removeItem(index),
+          ),
+          onTap: () {
+            controller.jumpTo(index);
+            context.push("/player?path=${Uri.encodeComponent(file)}");
+          },
+        );
+      },
     );
   }
 }
