@@ -4,8 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'playlist_state.dart';
 
 final playlistControllerProvider =
-    NotifierProvider<PlaylistController, PlaylistState>(
-        PlaylistController.new);
+    NotifierProvider<PlaylistController, PlaylistState>(PlaylistController.new);
 
 class PlaylistController extends Notifier<PlaylistState> {
   @override
@@ -55,5 +54,28 @@ class PlaylistController extends Notifier<PlaylistState> {
     if (index < 0 || index >= state.items.length) return;
 
     state = state.copyWith(currentIndex: index);
+  }
+
+  void reorder(int oldIndex, int newIndex) {
+    final items = [...state.items];
+
+    if (newIndex > oldIndex) {
+      newIndex -= 1;
+    }
+
+    final movedItem = items.removeAt(oldIndex);
+    items.insert(newIndex, movedItem);
+
+    int current = state.currentIndex;
+
+    // Update currentIndex if needed
+    if (oldIndex == current)
+      current = newIndex;
+    else if (oldIndex < current && newIndex >= current)
+      current -= 1;
+    else if (oldIndex > current && newIndex <= current)
+      current += 1;
+
+    state = state.copyWith(items: items, currentIndex: current);
   }
 }
