@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -124,7 +125,12 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     final controller = state.controller;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Player")),
+      appBar: AppBar(
+        title: const Text("Player"),
+        actions: [
+          IconButton(onPressed: () => context.pop(), icon: Icon(Icons.close)),
+        ],
+      ),
       body: Column(
         children: [
           Expanded(

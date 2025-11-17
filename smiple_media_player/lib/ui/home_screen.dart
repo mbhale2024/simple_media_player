@@ -26,7 +26,7 @@ class HomeScreen extends StatelessWidget {
 
             if (result != null && result.files.single.path != null) {
               final path = result.files.single.path!;
-              context.go("/player?path=$path");
+              context.push("/player?path=$path");
             }
           },
         ),
