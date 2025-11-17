@@ -1,4 +1,9 @@
 // lib/ui/player_screen.dart
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:video_player/video_player.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'dart:io';
 import 'dart:typed_data';
@@ -194,7 +199,12 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     final title = meta?.trackName ?? p.basename(widget.filePath);
 
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: AppBar(
+        title: const Text("Player"),
+        actions: [
+          IconButton(onPressed: () => context.pop(), icon: Icon(Icons.close)),
+        ],
+      ),
       body: Column(
         children: [
           Expanded(
