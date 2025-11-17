@@ -8,12 +8,14 @@ final router = GoRouter(
       path: '/',
       builder: (context, state) => const HomeScreen(),
     ),
-    GoRoute(
-      path: '/player',
-      builder: (context, state) {
-        final path = state.uri.queryParameters['path'] ?? '';
-        return PlayerScreen(filePath: path);
-      },
-    ),
+GoRoute(
+  path: '/player',
+  builder: (context, state) {
+    final raw = state.uri.queryParameters['path'] ?? '';
+    final filePath = Uri.decodeComponent(raw);
+
+    return PlayerScreen(filePath: filePath);
+  },
+),
   ],
 );
