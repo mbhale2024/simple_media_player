@@ -256,6 +256,14 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     final controller = state.controller;
     final player = ref.read(playerControllerProvider.notifier);
 
+    // Format duration to MM:SS
+    String formatDuration(Duration duration) {
+      String twoDigits(int n) => n.toString().padLeft(2, '0');
+      final minutes = twoDigits(duration.inMinutes.remainder(60));
+      final seconds = twoDigits(duration.inSeconds.remainder(60));
+      return '$minutes:$seconds';
+    }
+
     return Column(
       children: [
         // Only show scrubber for video
@@ -266,32 +274,41 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
           ),
         const SizedBox(height: 10),
 
-        // Playback controls
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.replay_10),
-              onPressed: player.backward,
-            ),
-            IconButton(
-              icon: Icon(
-                controller?.value.isPlaying == true
-                    ? Icons.pause
-                    : Icons.play_arrow,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ValueListenableBuilder(
+                valueListenable: controller!,
+                builder: (context, value, child) {
+                  return Text(formatDuration(controller.value.position));
+                },
               ),
-              iconSize: 40,
-              onPressed: player.playPause,
-            ),
-            IconButton(
-              icon: const Icon(Icons.forward_10),
-              onPressed: player.forward,
-            ),
-            IconButton(
-              icon: Icon(state.isRepeating ? Icons.repeat_on : Icons.repeat),
-              onPressed: player.toggleRepeat,
-            ),
-          ],
+              Spacer(),
+              IconButton(
+                icon: const Icon(Icons.replay_10),
+                onPressed: player.backward,
+              ),
+              IconButton(
+                icon: Icon(
+                  controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
+                ),
+                onPressed: player.playPause,
+                iconSize: 40,
+              ),
+              IconButton(
+                icon: const Icon(Icons.forward_10),
+                onPressed: player.forward,
+              ),
+              IconButton(
+                icon: Icon(state.isRepeating ? Icons.repeat_on : Icons.repeat),
+                onPressed: player.toggleRepeat,
+              ),
+              Spacer(),
+              Text(formatDuration(controller.value.duration)),
+            ],
+          ),
         ),
 
         // Volume
