@@ -1,7 +1,7 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
-export "FLUTTER_ROOT=/Users/armanpani/development/flutter"
-export "FLUTTER_APPLICATION_PATH=/Users/armanpani/development/simple_media_player/smiple_media_player"
+export "FLUTTER_ROOT=/Users/manabendu/fvm/versions/3.32.8"
+export "FLUTTER_APPLICATION_PATH=/Users/manabendu/Documents/GitHub/simple_media_player/smiple_media_player"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
 export "FLUTTER_TARGET=lib/main.dart"
 export "FLUTTER_BUILD_DIR=build"

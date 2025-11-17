@@ -9,7 +9,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  go_router: ^17.0.0
   media_kit: ^1.2.2
+  riverpod: ^3.0.3
+  video_player: ^2.10.1
 
 dev_dependencies:
   flutter_test:
