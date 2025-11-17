@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:smiple_media_player/ui/player/playlist_controller.dart';
+import 'package:smiple_media_player/ui/player/repeat_mode.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter_media_metadata/flutter_media_metadata.dart';
 import 'package:path/path.dart' as p;
@@ -30,9 +32,7 @@ class PlayerController extends Notifier<PlayerState> {
       if (mime.startsWith("audio/")) isAudioOnly = true;
     } else {
       final ext = p.extension(path).toLowerCase();
-      const audioExts = {
-        ".mp3", ".wav", ".aac", ".m4a", ".flac", ".ogg"
-      };
+      const audioExts = {".mp3", ".wav", ".aac", ".m4a", ".flac", ".ogg"};
       if (audioExts.contains(ext)) isAudioOnly = true;
     }
 
@@ -46,7 +46,26 @@ class PlayerController extends Notifier<PlayerState> {
 
     // Audio fix: Add continuous listener for duration updates
     ctrl.addListener(() {
-      state = state.copyWith(); 
+      // Auto-next logic
+      if (ctrl.value.position >= ctrl.value.duration && !ctrl.value.isPlaying) {
+        final playlist = ref.read(playlistControllerProvider);
+        // final playlistCtrl = ref.read(playlistControllerProvider.notifier);
+
+        if (playlist.repeatMode == RepeatMode.repeatOne) {
+          // replay same track
+          seekTo(Duration.zero);
+          playPause();
+        } else {
+          // go to next track
+          playNext();
+          // final nextFile = playlistCtrl.state.currentFile;
+          // if (nextFile != null) {
+          //   loadFile(nextFile);
+          // }
+        }
+      }
+
+      state = state.copyWith();
     });
 
     ctrl.setLooping(state.isRepeating);
@@ -104,6 +123,22 @@ class PlayerController extends Notifier<PlayerState> {
   void setVolume(double v) {
     state.controller?.setVolume(v);
     state = state.copyWith(volume: v);
+  }
+
+  void playNext() {
+    final playlistCtrl = ref.read(playlistControllerProvider.notifier);
+    playlistCtrl.next();
+
+    final file = playlistCtrl.state.currentFile;
+    if (file != null) loadFile(file);
+  }
+
+  void playPrevious() {
+    final playlistCtrl = ref.read(playlistControllerProvider.notifier);
+    playlistCtrl.previous();
+
+    final file = playlistCtrl.state.currentFile;
+    if (file != null) loadFile(file);
   }
 }
 
