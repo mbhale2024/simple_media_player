@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -6,6 +7,7 @@ import 'package:smiple_media_player/ui/player/repeat_mode.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter_media_metadata/flutter_media_metadata.dart';
 import 'package:path/path.dart' as p;
+import 'package:window_manager/window_manager.dart';
 
 import 'player_state.dart';
 
@@ -139,6 +141,37 @@ class PlayerController extends Notifier<PlayerState> {
 
     final file = playlistCtrl.state.currentFile;
     if (file != null) loadFile(file);
+  }
+
+  void showVolumeSlider(bool value) {
+    state = state.copyWith(showVolumeSlider: value);
+  }
+
+  void toggleMute() {
+    if (state.volume == 0) {
+      // unmute -> restore last volume
+      state = state.copyWith(volume: 1);
+    } else {
+      state = state.copyWith(volume: 0);
+    }
+  }
+
+  void toggleFullscreen() async {
+    bool isFull = await windowManager.isFullScreen();
+    await windowManager.setFullScreen(!isFull);
+  }
+
+  Timer? _hideTimer;
+
+  void onHover() {
+    if (!state.showControls) {
+      state = state.copyWith(showControls: true);
+    }
+
+    _hideTimer?.cancel();
+    _hideTimer = Timer(const Duration(seconds: 2), () {
+      state = state.copyWith(showControls: false);
+    });
   }
 }
 
