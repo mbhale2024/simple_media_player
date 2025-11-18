@@ -41,4 +41,12 @@ class PlayerState {
       albumArt: albumArt ?? this.albumArt,
     );
   }
+
+  /// Helper to check if controller is non-null & initialized
+  bool get hasActiveController {
+    final c = controller;
+    if (c == null) return false;
+    return c.value.isInitialized;
+  }
+
 }

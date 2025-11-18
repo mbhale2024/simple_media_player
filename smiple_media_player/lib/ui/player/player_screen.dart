@@ -384,7 +384,13 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
       appBar: AppBar(
         title: Text(title),
         actions: [
-          IconButton(onPressed: () => context.pop(), icon: Icon(Icons.close)),
+          IconButton(
+            onPressed: () {
+              controller.pause();
+              context.pop();
+            },
+            icon: Icon(Icons.close),
+          ),
         ],
       ),
       body: Column(
