@@ -128,7 +128,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
       appBar: AppBar(
         title: const Text("Player"),
         actions: [
-          IconButton(onPressed: () => context.pop(), icon: Icon(Icons.close)),
+          IconButton(onPressed: (){
+            controller!.dispose();
+            context.pop();
+          } , icon: Icon(Icons.close)),
         ],
       ),
       body: Column(
