@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter_media_metadata/flutter_media_metadata.dart';
 import 'package:video_player/video_player.dart';
