@@ -12,9 +12,8 @@ class PlaylistState {
     this.repeatMode = RepeatMode.none,
   });
 
-  String? get currentFile => (items.isEmpty || currentIndex >= items.length)
-      ? null
-      : items[currentIndex];
+  String? get currentFile =>
+      items.isEmpty ? null : items[currentIndex];
 
   PlaylistState copyWith({
     List<String>? items,

@@ -1,8 +1,8 @@
-import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
+import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:smiple_media_player/ui/player/playlist_controller.dart';
 import 'package:smiple_media_player/ui/player/playlist_state.dart';
 import 'package:smiple_media_player/ui/player/repeat_mode.dart';
@@ -27,22 +27,27 @@ class HomeScreen extends ConsumerWidget {
     final controller = ref.read(playlistControllerProvider.notifier);
 
     return Scaffold(
+      backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
-        title: const Text("Playlist"),
+        title: const Text("My Playlist", style: TextStyle(fontSize: 22)),
+        backgroundColor: Colors.black87,
+        elevation: 2,
         actions: [
           IconButton(
+            tooltip: "Repeat Mode",
             icon: Icon(
-              _repeatIcon(ref.watch(playlistControllerProvider).repeatMode),
+              _repeatIcon(playlist.repeatMode),
+              color: Colors.white.withOpacity(0.9),
             ),
-            onPressed: () {
-              ref.read(playlistControllerProvider.notifier).toggleRepeatMode();
-            },
+            onPressed: controller.toggleRepeatMode,
           ),
         ],
       ),
 
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: Colors.greenAccent.shade400,
+        icon: const Icon(Icons.add),
+        label: const Text("Add Media"),
         onPressed: () async {
           final result = await FilePicker.platform.pickFiles(
             allowMultiple: true,
@@ -72,72 +77,173 @@ class HomeScreen extends ConsumerWidget {
             }
           }
           if (shouldStartPlayer) {
-            final firstPath = ref.read(playlistControllerProvider).currentFile!;
-            context.push('/player?path=${Uri.encodeComponent(firstPath)}');
+            final path = ref.read(playlistControllerProvider).currentFile!;
+            if(context.mounted) context.push('/player?path=${Uri.encodeComponent(path)}');
           }
         },
       ),
 
-      body: DropTarget(
-        onDragDone: (details) {
-          final controller = ref.read(playlistControllerProvider.notifier);
+      body: SafeArea(
+        child: DropTarget(
+          onDragDone: (details) {
+            bool shouldStartPlayer = false;
 
-          bool shouldStartPlayer = false;
+            for (final file in details.files) {
+              final addedFirst = controller.addItem(file.path);
+              if (addedFirst) shouldStartPlayer = true;
+            }
 
-          for (final file in details.files) {
-            final path = file.path;
-            final firstAdded = controller.addItem(path);
-            if (firstAdded) shouldStartPlayer = true;
-          }
-
-          // Auto-play if playlist was empty
-          if (shouldStartPlayer) {
-            final firstTrack = ref
-                .read(playlistControllerProvider)
-                .currentFile!;
-            context.push('/player?path=${Uri.encodeComponent(firstTrack)}');
-          }
-        },
-
-        child: playlist.items.isEmpty
-            ? const Center(child: Text("Drag files here to add to playlist"))
-            : _playlistListView(ref, playlist),
+            if (shouldStartPlayer) {
+              final first = ref.read(playlistControllerProvider).currentFile!;
+              context.push('/player?path=${Uri.encodeComponent(first)}');
+            }
+          },
+          child: playlist.items.isEmpty
+              ? _emptyDragTarget()
+              : _playlistView(context, ref, playlist),
+        ),
       ),
     );
   }
 
-  Widget _playlistListView(WidgetRef ref, PlaylistState playlist) {
+  // -------------------------------------------------------
+  // EMPTY STATE
+  // -------------------------------------------------------
+  Widget _emptyDragTarget() {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white24, width: 2),
+        ),
+        child: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.upload_file, size: 64, color: Colors.white54),
+            SizedBox(height: 16),
+            Text(
+              "Drag & Drop audio/video files here\nor click + to add to playlist",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18, color: Colors.white70),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // -------------------------------------------------------
+  // RESPONSIVE PLAYLIST
+  // -------------------------------------------------------
+  Widget _playlistView(
+    BuildContext context,
+    WidgetRef ref,
+    PlaylistState playlist,
+  ) {
     final controller = ref.read(playlistControllerProvider.notifier);
 
-    return ReorderableListView.builder(
-      itemCount: playlist.items.length,
-      onReorder: controller.reorder,
-      itemBuilder: (context, index) {
-        final file = playlist.items[index];
-        final isCurrent = index == playlist.currentIndex;
+    return Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Material(
+          color: Colors.black26,
+          child: ReorderableListView.builder(
+            padding: const EdgeInsets.only(bottom: 100),
+            itemCount: playlist.items.length,
+            onReorder: controller.reorder,
+            buildDefaultDragHandles: false,
+            proxyDecorator: (child, index, animation) {
+              return Material(
+                elevation: 8,
+                color: Colors.grey.shade900,
+                borderRadius: BorderRadius.circular(8),
+                child: child,
+              );
+            },
+            itemBuilder: (context, index) {
+              final file = playlist.items[index];
+              final isCurrent = index == playlist.currentIndex;
 
-        return ListTile(
-          key: ValueKey(file),
-          leading: const Icon(Icons.drag_handle),
-          title: Text(
-            file.split('/').last,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: isCurrent ? Colors.greenAccent : Colors.white,
-              fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+              return _playlistTile(
+                key: ValueKey(index),
+                index: index,
+                file: file,
+                isActive: isCurrent,
+                onTap: () {
+                  debugPrint("Tapping on $file");
+                  controller.jumpTo(index);
+                  context.push('/player?path=${Uri.encodeComponent(file)}');
+                },
+                onDelete: () => controller.removeItem(index),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  // -------------------------------------------------------
+  // PLAYLIST TILE
+  // -------------------------------------------------------
+  Widget _playlistTile({
+    required Key key,
+    required int index,
+    required String file,
+    required bool isActive,
+    required VoidCallback onTap,
+    required VoidCallback onDelete,
+  }) {
+    return GestureDetector(
+      key: key,
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: isActive ? Colors.green.withOpacity(0.15) : Colors.black38,
+          borderRadius: BorderRadius.circular(8),
+          border: isActive
+              ? Border.all(color: Colors.greenAccent.shade400, width: 1.4)
+              : Border.all(color: Colors.white12),
+        ),
+
+        child: Row(
+          children: [
+            // DRAG HANDLE
+            ReorderableDragStartListener(
+              index: index,
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                child: Icon(Icons.drag_indicator, color: Colors.white70),
+              ),
             ),
-          ),
-          trailing: IconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: () => controller.removeItem(index),
-          ),
-          onTap: () {
-            controller.jumpTo(index);
-            context.push("/player?path=${Uri.encodeComponent(file)}");
-          },
-        );
-      },
+
+            const SizedBox(width: 12),
+
+            // FILENAME
+            Expanded(
+              child: Text(
+                file.split('/').last,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                  color: isActive ? Colors.greenAccent : Colors.white,
+                ),
+              ),
+            ),
+
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.redAccent),
+              onPressed: onDelete,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
