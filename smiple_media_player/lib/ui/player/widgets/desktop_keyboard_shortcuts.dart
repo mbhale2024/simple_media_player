@@ -195,7 +195,7 @@ class _DesktopKeyboardShortcutsState
         },
         child: Focus(
           autofocus: true,
-          canRequestFocus: true, // 👈 be explicit
+          canRequestFocus: true, // be explicit
           focusNode: _focusNode,
           child: widget.child,
         ),

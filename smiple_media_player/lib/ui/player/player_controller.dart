@@ -31,9 +31,54 @@ class PlayerController extends Notifier<PlayerState> {
     return audioExts.contains(ext);
   }
 
-  Future<void> loadFile(String path) async {
-    final int requestId = ++_loadRequestId;
+  bool _isNetwork(String path) {
+    return path.startsWith("http://") || path.startsWith("https://");
+  }
 
+  Future<void> loadNetwork(String url) async {
+    state.controller?.dispose();
+    bool isAudio =
+        url.toLowerCase().endsWith(".mp3") ||
+        url.toLowerCase().endsWith(".wav") ||
+        url.toLowerCase().endsWith(".aac") ||
+        url.toLowerCase().endsWith(".m4a") ||
+        url.toLowerCase().endsWith(".ogg");
+
+    VideoPlayerController? ctrl;
+    if (!isAudio) {
+      try {
+        ctrl = VideoPlayerController.networkUrl(Uri.parse(url));
+        await ctrl.initialize();
+        ctrl.setLooping(state.isRepeating);
+        ctrl.setVolume(state.volume);
+      } catch (_) {
+        isAudio = true;
+        ctrl = null;
+      }
+    }
+
+    state = state.copyWith(
+      controller: ctrl,
+      isAudio: isAudio,
+      albumArt: null,
+      metadata: null,
+    );
+
+    if (ctrl != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => ctrl?.play());
+    }
+  }
+
+  Future<void> load(String path) async {
+    if (_isNetwork(path)) {
+      await loadNetwork(path);
+    } else {
+      await loadLocal(path);
+    }
+  }
+
+  Future<void> loadLocal(String path) async {
+    final int requestId = ++_loadRequestId;
     // --- 1. Read metadata (safe) ---
     Metadata? meta;
     try {
@@ -153,7 +198,7 @@ class PlayerController extends Notifier<PlayerState> {
     playlistCtrl.next();
 
     final file = playlistCtrl.state.currentFile;
-    if (file != null) loadFile(file);
+    if (file != null) loadLocal(file);
   }
 
   void playPrevious() {
@@ -161,7 +206,7 @@ class PlayerController extends Notifier<PlayerState> {
     playlistCtrl.previous();
 
     final file = playlistCtrl.state.currentFile;
-    if (file != null) loadFile(file);
+    if (file != null) loadLocal(file);
   }
 
   void showVolumeSlider(bool value) {
@@ -175,6 +220,7 @@ class PlayerController extends Notifier<PlayerState> {
     } else {
       state = state.copyWith(volume: 0);
     }
+    setVolume(state.volume);
   }
 
   void toggleFullscreen() async {

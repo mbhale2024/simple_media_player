@@ -29,19 +29,44 @@ class HomeScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
-        title: const Text("My Playlist", style: TextStyle(fontSize: 22)),
         backgroundColor: Colors.black87,
         elevation: 2,
-        actions: [
-          IconButton(
-            tooltip: "Repeat Mode",
-            icon: Icon(
-              _repeatIcon(playlist.repeatMode),
-              color: Colors.white.withOpacity(0.9),
+        titleSpacing: 0,
+        title: Row(
+          children: [
+            const SizedBox(width: 12),
+
+            // Logo or small icon
+            const Icon(Icons.library_music, size: 20),
+            const SizedBox(width: 8),
+
+            const Text("Media Player", style: TextStyle(fontSize: 18)),
+
+            const Spacer(),
+
+            // ➤ Add Web URL Button
+            TextButton.icon(
+              style: TextButton.styleFrom(foregroundColor: Colors.greenAccent),
+              icon: const Icon(Icons.public),
+              label: const Text("Play URL"),
+              onPressed: () => _showUrlDialog(context),
             ),
-            onPressed: controller.toggleRepeatMode,
-          ),
-        ],
+
+            const SizedBox(width: 8),
+
+            // Repeat icon
+            IconButton(
+              tooltip: "Repeat Mode",
+              icon: Icon(
+                _repeatIcon(playlist.repeatMode),
+                color: Colors.white.withOpacity(0.9),
+              ),
+              onPressed: controller.toggleRepeatMode,
+            ),
+
+            const SizedBox(width: 8),
+          ],
+        ),
       ),
 
       floatingActionButton: FloatingActionButton.extended(
@@ -78,7 +103,9 @@ class HomeScreen extends ConsumerWidget {
           }
           if (shouldStartPlayer) {
             final path = ref.read(playlistControllerProvider).currentFile!;
-            if(context.mounted) context.push('/player?path=${Uri.encodeComponent(path)}');
+            if (context.mounted) {
+              context.push('/player?path=${Uri.encodeComponent(path)}');
+            }
           }
         },
       ),
@@ -103,6 +130,45 @@ class HomeScreen extends ConsumerWidget {
               : _playlistView(context, ref, playlist),
         ),
       ),
+    );
+  }
+
+  void _showUrlDialog(BuildContext context) {
+    final controller = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.grey[900],
+          title: const Text("Play from URL"),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(
+              hintText: "Enter web audio/video URL",
+              hintStyle: TextStyle(color: Colors.white38),
+            ),
+            style: const TextStyle(color: Colors.white),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              child: const Text("Cancel"),
+              onPressed: () => Navigator.pop(context),
+            ),
+            TextButton(
+              child: const Text("Play"),
+              onPressed: () {
+                final url = controller.text.trim();
+                if (url.isNotEmpty) {
+                  Navigator.pop(context);
+                  context.push('/network?url=${Uri.encodeComponent(url)}');
+                }
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
