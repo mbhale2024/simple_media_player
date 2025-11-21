@@ -4,12 +4,13 @@ import 'package:window_manager/window_manager.dart';
 import 'router/router_config.dart';
 
 void main() async{
-
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
 
   WindowOptions windowOptions = const WindowOptions(
+    size: Size(1200, 800),
     center: true,
+    minimumSize: Size(800, 600),
     backgroundColor: Colors.transparent,
     titleBarStyle: TitleBarStyle.normal,
   );
