@@ -20,6 +20,17 @@ class PlayerController extends Notifier<PlayerState> {
     return const PlayerState();
   }
 
+  int _loadRequestId = 0;
+
+  bool _detectIsAudio(String path, Metadata? meta) {
+    final mime = meta?.mimeType?.toLowerCase();
+    if (mime != null && mime.startsWith("audio/")) return true;
+
+    final ext = p.extension(path).toLowerCase();
+    const audioExts = {".mp3", ".wav", ".aac", ".m4a", ".flac", ".ogg"};
+    return audioExts.contains(ext);
+  }
+
   bool _isNetwork(String path) {
     return path.startsWith("http://") || path.startsWith("https://");
   }
@@ -67,69 +78,78 @@ class PlayerController extends Notifier<PlayerState> {
   }
 
   Future<void> loadLocal(String path) async {
+    final int requestId = ++_loadRequestId;
+    // --- 1. Read metadata (safe) ---
     Metadata? meta;
     try {
       meta = await MetadataRetriever.fromFile(File(path));
     } catch (_) {}
 
-    bool isAudioOnly = false;
-
-    // Detect based on mime
-    final mime = meta?.mimeType?.toLowerCase();
-    if (mime != null) {
-      if (mime.startsWith("audio/")) isAudioOnly = true;
-    } else {
-      final ext = p.extension(path).toLowerCase();
-      const audioExts = {".mp3", ".wav", ".aac", ".m4a", ".flac", ".ogg"};
-      if (audioExts.contains(ext)) isAudioOnly = true;
-    }
-
+    final isAudioOnly = _detectIsAudio(path, meta);
     final art = meta?.albumArt;
 
-    // Dispose previous controller
-    state.controller?.dispose();
+    // --- 2. Create a new controller (DO NOT dispose old one yet) ---
+    final oldCtrl = state.controller;
+    final newCtrl = VideoPlayerController.file(File(path));
 
-    final ctrl = VideoPlayerController.file(File(path));
-    await ctrl.initialize();
+    try {
+      await newCtrl.initialize();
+    } catch (e) {
+      // safe failure: controller init failed
+      if (requestId != _loadRequestId) {
+        newCtrl.dispose();
+        return;
+      }
+      rethrow;
+    }
 
-    // Audio fix: Add continuous listener for duration updates
-    ctrl.addListener(() {
+    // --- 3. CANCEL if another loadFile has been called ---
+    if (requestId != _loadRequestId) {
+      newCtrl.dispose();
+      return;
+    }
+
+    // --- 4. Now safe to dispose old controller ---
+    oldCtrl?.dispose();
+
+    // --- 5. Set listeners AFTER controller is validated ---
+    newCtrl.addListener(() {
+      if (requestId != _loadRequestId) return; // Listener from old load calls
+
+      final v = newCtrl.value;
+
       // Auto-next logic
-      if (ctrl.value.position >= ctrl.value.duration && !ctrl.value.isPlaying) {
+      if (!v.isPlaying && v.position >= v.duration) {
         final playlist = ref.read(playlistControllerProvider);
-        // final playlistCtrl = ref.read(playlistControllerProvider.notifier);
-
         if (playlist.repeatMode == RepeatMode.repeatOne) {
-          // replay same track
           seekTo(Duration.zero);
           playPause();
         } else {
-          // go to next track
           playNext();
-          // final nextFile = playlistCtrl.state.currentFile;
-          // if (nextFile != null) {
-          //   loadFile(nextFile);
-          // }
         }
       }
 
+      // Trigger UI rebuild
       state = state.copyWith();
     });
 
-    ctrl.setLooping(state.isRepeating);
-    ctrl.setVolume(state.volume);
+    newCtrl.setLooping(state.isRepeating);
+    newCtrl.setVolume(state.volume);
 
+    // --- 6. Update state with the new controller ---
     state = state.copyWith(
-      controller: ctrl,
+      controller: newCtrl,
       isAudio: isAudioOnly,
       metadata: meta,
       albumArt: art,
       isPlaying: true,
     );
 
-    // Play after build frame
+    // --- 7. Start playback after the build ---
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ctrl.play();
+      if (requestId == _loadRequestId) {
+        newCtrl.play();
+      }
     });
   }
 
