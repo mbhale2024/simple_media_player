@@ -46,11 +46,10 @@ class BottomControlPanel extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: AppTextstyles.title),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Subtitle", style: AppTextstyles.subtitle),
+                Text(title, style: AppTextstyles.title),
                 Text(countdown, style: AppTextstyles.subtitle),
               ],
             ),

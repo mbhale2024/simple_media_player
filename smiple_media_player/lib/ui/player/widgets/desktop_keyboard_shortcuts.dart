@@ -9,16 +9,27 @@ import '../../player/player_controller.dart';
 /// INTENTS
 /// ------------------------------------------------------------
 class PlayPauseIntent extends Intent {}
+
 class ForwardIntent extends Intent {}
+
 class BackwardIntent extends Intent {}
+
 class BigForwardIntent extends Intent {}
+
 class BigBackwardIntent extends Intent {}
+
 class NextTrackIntent extends Intent {}
+
 class PreviousTrackIntent extends Intent {}
+
 class MuteIntent extends Intent {}
+
 class VolumeUpIntent extends Intent {}
+
 class VolumeDownIntent extends Intent {}
+
 class FullScreenIntent extends Intent {}
+
 class ExitFullScreenIntent extends Intent {}
 
 /// ------------------------------------------------------------
@@ -43,7 +54,6 @@ class _DesktopKeyboardShortcutsState
     super.initState();
     _focusNode = FocusNode();
 
-    // Ensure focus at startup
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _focusNode.requestFocus();
     });
@@ -61,7 +71,7 @@ class _DesktopKeyboardShortcutsState
   Future<void> _enterFullScreen() async {
     await windowManager.setFullScreen(true);
 
-    Future.delayed(const Duration(milliseconds: 200), () {
+    Future.microtask(() {
       if (mounted) _focusNode.requestFocus();
     });
   }
@@ -69,7 +79,7 @@ class _DesktopKeyboardShortcutsState
   Future<void> _exitFullScreen() async {
     await windowManager.setFullScreen(false);
 
-    Future.delayed(const Duration(milliseconds: 200), () {
+    Future.microtask(() {
       if (mounted) _focusNode.requestFocus();
     });
   }
@@ -106,18 +116,24 @@ class _DesktopKeyboardShortcutsState
       },
       child: Actions(
         actions: {
-          PlayPauseIntent: CallbackAction(onInvoke: (_) {
-            controller.playPause();
-            return null;
-          }),
-          ForwardIntent: CallbackAction(onInvoke: (_) {
-            controller.forward();
-            return null;
-          }),
-          BackwardIntent: CallbackAction(onInvoke: (_) {
-            controller.backward();
-            return null;
-          }),
+          PlayPauseIntent: CallbackAction(
+            onInvoke: (_) {
+              controller.playPause();
+              return null;
+            },
+          ),
+          ForwardIntent: CallbackAction(
+            onInvoke: (_) {
+              controller.forward();
+              return null;
+            },
+          ),
+          BackwardIntent: CallbackAction(
+            onInvoke: (_) {
+              controller.backward();
+              return null;
+            },
+          ),
           // BigForwardIntent: CallbackAction(onInvoke: (_) {
           //   controller.seekRelative(const Duration(seconds: 60));
           //   return null;
@@ -126,40 +142,60 @@ class _DesktopKeyboardShortcutsState
           //   controller.seekRelative(const Duration(seconds: -60));
           //   return null;
           // }),
-          NextTrackIntent: CallbackAction(onInvoke: (_) {
-            controller.playNext();
-            return null;
-          }),
-          PreviousTrackIntent: CallbackAction(onInvoke: (_) {
-            controller.playPrevious();
-            return null;
-          }),
-          MuteIntent: CallbackAction(onInvoke: (_) {
-            final current = ref.read(playerControllerProvider).volume;
-            controller.setVolume(current > 0 ? 0 : 1.0);
-            return null;
-          }),
-          VolumeUpIntent: CallbackAction(onInvoke: (_) {
-            final v = ref.read(playerControllerProvider).volume;
-            controller.setVolume((v + 0.1).clamp(0, 1.0));
-            return null;
-          }),
-          VolumeDownIntent: CallbackAction(onInvoke: (_) {
-            final v = ref.read(playerControllerProvider).volume;
-            controller.setVolume((v - 0.1).clamp(0, 1.0));
-            return null;
-          }),
-          FullScreenIntent: CallbackAction(onInvoke: (_) {
-            _enterFullScreen();
-            return null;
-          }),
-          ExitFullScreenIntent: CallbackAction(onInvoke: (_) {
-            _exitFullScreen();
-            return null;
-          }),
+          NextTrackIntent: CallbackAction(
+            onInvoke: (_) {
+              controller.playNext();
+              return null;
+            },
+          ),
+          PreviousTrackIntent: CallbackAction(
+            onInvoke: (_) {
+              controller.playPrevious();
+              return null;
+            },
+          ),
+          MuteIntent: CallbackAction(
+            onInvoke: (_) {
+              final current = ref.read(playerControllerProvider).volume;
+              controller.setVolume(current > 0 ? 0 : 1.0);
+              return null;
+            },
+          ),
+          VolumeUpIntent: CallbackAction(
+            onInvoke: (_) {
+              final v = ref.read(playerControllerProvider).volume;
+              controller.setVolume((v + 0.1).clamp(0, 1.0));
+              return null;
+            },
+          ),
+          VolumeDownIntent: CallbackAction(
+            onInvoke: (_) {
+              final v = ref.read(playerControllerProvider).volume;
+              controller.setVolume((v - 0.1).clamp(0, 1.0));
+              return null;
+            },
+          ),
+          FullScreenIntent: CallbackAction(
+            onInvoke: (_) {
+              WidgetsBinding.instance.addPostFrameCallback((_) async {
+                _enterFullScreen();
+              });
+              return null;
+            },
+          ),
+
+          ExitFullScreenIntent: CallbackAction(
+            onInvoke: (_) {
+              WidgetsBinding.instance.addPostFrameCallback((_) async {
+                _exitFullScreen();
+              });
+              return null;
+            },
+          ),
         },
         child: Focus(
           autofocus: true,
+          canRequestFocus: true, // 👈 be explicit
           focusNode: _focusNode,
           child: widget.child,
         ),
