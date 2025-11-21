@@ -220,6 +220,7 @@ class PlayerController extends Notifier<PlayerState> {
     } else {
       state = state.copyWith(volume: 0);
     }
+    setVolume(state.volume);
   }
 
   void toggleFullscreen() async {

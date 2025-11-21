@@ -49,7 +49,16 @@ class BottomControlPanel extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(title, style: AppTextstyles.title),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: AppTextstyles.title,
+                    softWrap: true,
+                    overflow: TextOverflow
+                        .ellipsis, // Prevents multi-line breaking Row
+                  ),
+                ),
+                const SizedBox(width: 12),
                 Text(countdown, style: AppTextstyles.subtitle),
               ],
             ),
@@ -98,6 +107,22 @@ class BottomControlPanel extends StatelessWidget {
           visualDensity: VisualDensity.compact,
           icon: const Icon(LucideIcons.rotateCw),
           onPressed: notifier.forward,
+          color: Colors.white,
+          iconSize: 34,
+        ),
+
+        IconButton(
+          visualDensity: VisualDensity.compact,
+          icon: const Icon(LucideIcons.chevronFirst),
+          onPressed: notifier.playPrevious,
+          color: Colors.white,
+          iconSize: 34,
+        ),
+
+        IconButton(
+          visualDensity: VisualDensity.compact,
+          icon: const Icon(LucideIcons.chevronLast),
+          onPressed: notifier.playNext,
           color: Colors.white,
           iconSize: 34,
         ),
