@@ -184,15 +184,28 @@ class PlayerController extends Notifier<PlayerState> {
 
   Timer? _hideTimer;
 
-  void onHover() {
+  void onUserActive() {
     if (!state.showControls) {
       state = state.copyWith(showControls: true);
     }
 
     _hideTimer?.cancel();
     _hideTimer = Timer(const Duration(seconds: 2), () {
-      state = state.copyWith(showControls: false);
+      // Only hide if mouse is NOT over controls
+      if (!state.isPointerInsideControls) {
+        state = state.copyWith(showControls: false);
+      }
     });
+  }
+
+  void onControlsEnter() {
+    state = state.copyWith(isPointerInsideControls: true);
+    onUserActive(); // keep them visible
+  }
+
+  void onControlsExit() {
+    state = state.copyWith(isPointerInsideControls: false);
+    onUserActive(); // restart timer
   }
 }
 

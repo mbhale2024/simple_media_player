@@ -118,18 +118,21 @@ class _DesktopKeyboardShortcutsState
         actions: {
           PlayPauseIntent: CallbackAction(
             onInvoke: (_) {
+              controller.onUserActive();
               controller.playPause();
               return null;
             },
           ),
           ForwardIntent: CallbackAction(
             onInvoke: (_) {
+              controller.onUserActive();
               controller.forward();
               return null;
             },
           ),
           BackwardIntent: CallbackAction(
             onInvoke: (_) {
+              controller.onUserActive();
               controller.backward();
               return null;
             },
@@ -144,25 +147,29 @@ class _DesktopKeyboardShortcutsState
           // }),
           NextTrackIntent: CallbackAction(
             onInvoke: (_) {
+              controller.onUserActive();
               controller.playNext();
               return null;
             },
           ),
           PreviousTrackIntent: CallbackAction(
             onInvoke: (_) {
+              controller.onUserActive();
               controller.playPrevious();
               return null;
             },
           ),
           MuteIntent: CallbackAction(
             onInvoke: (_) {
+              controller.onUserActive();
               final current = ref.read(playerControllerProvider).volume;
               controller.setVolume(current > 0 ? 0 : 1.0);
               return null;
             },
           ),
           VolumeUpIntent: CallbackAction(
-            onInvoke: (_) {
+            onInvoke: (_) {              
+              controller.onUserActive();
               final v = ref.read(playerControllerProvider).volume;
               controller.setVolume((v + 0.1).clamp(0, 1.0));
               return null;
@@ -170,6 +177,7 @@ class _DesktopKeyboardShortcutsState
           ),
           VolumeDownIntent: CallbackAction(
             onInvoke: (_) {
+              controller.onUserActive();
               final v = ref.read(playerControllerProvider).volume;
               controller.setVolume((v - 0.1).clamp(0, 1.0));
               return null;
@@ -177,6 +185,7 @@ class _DesktopKeyboardShortcutsState
           ),
           FullScreenIntent: CallbackAction(
             onInvoke: (_) {
+              controller.onUserActive();
               WidgetsBinding.instance.addPostFrameCallback((_) async {
                 _enterFullScreen();
               });
@@ -186,6 +195,7 @@ class _DesktopKeyboardShortcutsState
 
           ExitFullScreenIntent: CallbackAction(
             onInvoke: (_) {
+              controller.onUserActive();
               WidgetsBinding.instance.addPostFrameCallback((_) async {
                 _exitFullScreen();
               });

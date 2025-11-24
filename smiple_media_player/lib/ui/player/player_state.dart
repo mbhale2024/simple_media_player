@@ -10,12 +10,14 @@ class PlayerState {
   final double volume;
   final bool showControls;
   final bool showVolumeSlider;
+  final bool isPointerInsideControls;
   final Metadata? metadata;
   final Uint8List? albumArt;
 
   const PlayerState({
     this.controller,
     this.isPlaying = false,
+    this.isPointerInsideControls = false,
     this.showControls = false,
     this.showVolumeSlider = false,
     this.isAudio = false,
@@ -27,6 +29,7 @@ class PlayerState {
 
   PlayerState copyWith({
     VideoPlayerController? controller,
+    bool? isPointerInsideControls,
     bool? showControls,
     bool? isPlaying,
     bool? isAudio,
@@ -35,9 +38,14 @@ class PlayerState {
     double? volume,
     Metadata? metadata,
     Uint8List? albumArt,
+    bool? showPreview,
+    Uint8List? previewFrameBytes,
+    double? previewX,
   }) {
     return PlayerState(
       controller: controller ?? this.controller,
+      isPointerInsideControls:
+          isPointerInsideControls ?? this.isPointerInsideControls,
       showControls: showControls ?? this.showControls,
       showVolumeSlider: showVolumeSlider ?? this.showVolumeSlider,
       isPlaying: isPlaying ?? this.isPlaying,
@@ -55,5 +63,4 @@ class PlayerState {
     if (c == null) return false;
     return c.value.isInitialized;
   }
-
 }
