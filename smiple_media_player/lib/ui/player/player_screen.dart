@@ -23,7 +23,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(playerControllerProvider.notifier).loadFile(widget.filePath);
+      ref.read(playerControllerProvider.notifier).load(widget.filePath);
     });
   }
 

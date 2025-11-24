@@ -13,5 +13,12 @@ final router = GoRouter(
         return PlayerScreen(filePath: raw);
       },
     ),
+    GoRoute(
+      path: '/network',
+      builder: (context, state) {
+        final url = state.uri.queryParameters['url']!;
+        return PlayerScreen(filePath: url);
+      },
+    ),
   ],
 );
