@@ -9,6 +9,7 @@ import 'package:flutter_media_metadata/flutter_media_metadata.dart';
 import 'package:path/path.dart' as p;
 import 'package:window_manager/window_manager.dart';
 
+import 'package:smiple_media_player/ui/player/thumbnail_generator.dart';
 import 'player_state.dart';
 
 class PlayerController extends Notifier<PlayerState> {
@@ -143,6 +144,7 @@ class PlayerController extends Notifier<PlayerState> {
       metadata: meta,
       albumArt: art,
       isPlaying: true,
+      thumbnails: {}, // Clear old thumbnails
     );
 
     // --- 7. Start playback after the build ---
@@ -151,6 +153,15 @@ class PlayerController extends Notifier<PlayerState> {
         newCtrl.play();
       }
     });
+
+    // --- 8. Generate thumbnails in background ---
+    if (!isAudioOnly) {
+      ThumbnailGenerator.generate(path, newCtrl.value.duration).then((thumbs) {
+        if (requestId == _loadRequestId) {
+          state = state.copyWith(thumbnails: thumbs);
+        }
+      });
+    }
   }
 
   void playPause() {

@@ -13,6 +13,7 @@ class PlayerState {
   final bool isPointerInsideControls;
   final Metadata? metadata;
   final Uint8List? albumArt;
+  final Map<int, Uint8List> thumbnails;
 
   const PlayerState({
     this.controller,
@@ -25,6 +26,7 @@ class PlayerState {
     this.volume = 1.0,
     this.metadata,
     this.albumArt,
+    this.thumbnails = const {},
   });
 
   PlayerState copyWith({
@@ -38,9 +40,7 @@ class PlayerState {
     double? volume,
     Metadata? metadata,
     Uint8List? albumArt,
-    bool? showPreview,
-    Uint8List? previewFrameBytes,
-    double? previewX,
+    Map<int, Uint8List>? thumbnails,
   }) {
     return PlayerState(
       controller: controller ?? this.controller,
@@ -54,6 +54,7 @@ class PlayerState {
       volume: volume ?? this.volume,
       metadata: metadata ?? this.metadata,
       albumArt: albumArt ?? this.albumArt,
+      thumbnails: thumbnails ?? this.thumbnails,
     );
   }
 
