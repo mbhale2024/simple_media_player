@@ -43,26 +43,34 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
           children: [
             Expanded(
               child: MouseRegion(
-                onHover: (_) => notifier.onHover(),
+                onHover: (_) => notifier.onUserActive(),
                 child: Stack(
                   children: [
                     state.isAudio ? _audioUI(state) : _videoUI(state),
-                    AnimatedOpacity(
-                      opacity: state.showControls ? 1.0 : 0.0,
-                      duration: const Duration(milliseconds: 300),
-                      child: _buildTopBar(controller, context),
+                    MouseRegion(
+                      onEnter: (_) => notifier.onControlsEnter(),
+                      onExit: (_) => notifier.onControlsExit(),
+                      child: AnimatedOpacity(
+                        opacity: state.showControls ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 300),
+                        child: _buildTopBar(controller, context),
+                      ),
                     ),
                     Positioned(
                       bottom: 0,
                       left: 0,
                       right: 0,
-                      child: AnimatedOpacity(
-                        opacity: state.showControls ? 1.0 : 0.0,
-                        duration: const Duration(milliseconds: 300),
-                        child: BottomControlPanel(
-                          notifier: notifier,
-                          state: state,
-                          filePath: widget.filePath,
+                      child: MouseRegion(
+                        onEnter: (_) => notifier.onControlsEnter(),
+                        onExit: (_) => notifier.onControlsExit(),
+                        child: AnimatedOpacity(
+                          opacity: state.showControls ? 1.0 : 0.0,
+                          duration: const Duration(milliseconds: 300),
+                          child: BottomControlPanel(
+                            notifier: notifier,
+                            state: state,
+                            filePath: widget.filePath,
+                          ),
                         ),
                       ),
                     ),

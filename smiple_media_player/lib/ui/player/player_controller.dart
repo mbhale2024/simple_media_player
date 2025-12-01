@@ -9,6 +9,7 @@ import 'package:flutter_media_metadata/flutter_media_metadata.dart';
 import 'package:path/path.dart' as p;
 import 'package:window_manager/window_manager.dart';
 
+import 'package:smiple_media_player/ui/player/thumbnail_generator.dart';
 import 'player_state.dart';
 
 class PlayerController extends Notifier<PlayerState> {
@@ -143,6 +144,7 @@ class PlayerController extends Notifier<PlayerState> {
       metadata: meta,
       albumArt: art,
       isPlaying: true,
+      thumbnails: {}, // Clear old thumbnails
     );
 
     // --- 7. Start playback after the build ---
@@ -151,6 +153,15 @@ class PlayerController extends Notifier<PlayerState> {
         newCtrl.play();
       }
     });
+
+    // --- 8. Generate thumbnails in background ---
+    if (!isAudioOnly) {
+      ThumbnailGenerator.generate(path, newCtrl.value.duration).then((thumbs) {
+        if (requestId == _loadRequestId) {
+          state = state.copyWith(thumbnails: thumbs);
+        }
+      });
+    }
   }
 
   void playPause() {
@@ -230,15 +241,28 @@ class PlayerController extends Notifier<PlayerState> {
 
   Timer? _hideTimer;
 
-  void onHover() {
+  void onUserActive() {
     if (!state.showControls) {
       state = state.copyWith(showControls: true);
     }
 
     _hideTimer?.cancel();
     _hideTimer = Timer(const Duration(seconds: 2), () {
-      state = state.copyWith(showControls: false);
+      // Only hide if mouse is NOT over controls
+      if (!state.isPointerInsideControls) {
+        state = state.copyWith(showControls: false);
+      }
     });
+  }
+
+  void onControlsEnter() {
+    state = state.copyWith(isPointerInsideControls: true);
+    onUserActive(); // keep them visible
+  }
+
+  void onControlsExit() {
+    state = state.copyWith(isPointerInsideControls: false);
+    onUserActive(); // restart timer
   }
 }
 

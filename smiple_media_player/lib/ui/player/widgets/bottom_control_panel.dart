@@ -3,6 +3,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:smiple_media_player/constants/app_textstyles.dart';
 import 'package:smiple_media_player/ui/player/player_controller.dart';
 import 'package:smiple_media_player/ui/player/player_state.dart';
+import 'package:smiple_media_player/ui/player/widgets/video_preview_slider.dart';
 import 'package:path/path.dart';
 
 class BottomControlPanel extends StatelessWidget {
@@ -62,15 +63,15 @@ class BottomControlPanel extends StatelessWidget {
                 Text(countdown, style: AppTextstyles.subtitle),
               ],
             ),
-            Slider(
-              padding: EdgeInsets.zero,
-              min: 0,
-              max: duration.inMilliseconds.toDouble(),
+            VideoPreviewSlider(
               value: position.inMilliseconds
                   .clamp(0, duration.inMilliseconds)
                   .toDouble(),
+              min: 0,
+              max: duration.inMilliseconds.toDouble(),
               onChanged: (v) =>
                   notifier.seekTo(Duration(milliseconds: v.toInt())),
+              thumbnails: state.thumbnails,
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

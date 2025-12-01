@@ -16,8 +16,11 @@ dependencies:
   hooks_riverpod: ^3.0.3
   lucide_icons_flutter: ^3.1.6
   media_kit: ^1.2.2
+  media_kit_libs_macos_video: ^1.1.4
+  media_kit_video: ^2.0.0
   media_source: ^1.0.0
   path: ^1.9.1
+  path_provider: ^2.1.5
   riverpod: ^3.0.3
   video_player: ^2.10.1
   window_manager: ^0.5.1
